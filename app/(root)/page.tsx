@@ -1,18 +1,15 @@
 import { Container, Title, TopBar, Filters } from '@/shared/components/shared'
 import { ProductsGroupList } from '@/shared/components/shared/products-group-list'
-import { prisma } from '@/prisma/prisma'
+import { Suspense } from 'react'
+import { findPizzas } from '@/shared/lib'
+import { GetSearchParams } from '@/shared/lib/find-pizzas'
 
-export default async function Home() {
-	const categories = await prisma.category.findMany({
-		include: {
-			product: {
-				include: {
-					items: true,
-					ingredients: true,
-				},
-			},
-		},
-	})
+export default async function Home({
+	searchParams,
+}: {
+	searchParams: GetSearchParams
+}) {
+	const categories = await findPizzas(searchParams)
 
 	return (
 		<>
@@ -26,7 +23,9 @@ export default async function Home() {
 				<div className="flex gap-[80px]">
 					{/* Фильтрация */}
 					<div className="w-[250px]">
-						<Filters />
+						<Suspense>
+							<Filters />
+						</Suspense>
 					</div>
 					{/* Список товаров */}
 					<div className="flex-1">
